@@ -1,8 +1,8 @@
 # Introduction to React Native
 
-Traditionally developing native iOS and Android applications has required the developer to use platform-specific programming language and development environment. For iOS development, this means using Swift and for Android development using JVM based languages such as Java, Scala or Kotlin. Releasing an application for both these platforms technically requires to develop two separate applications with different programming languages. This requires lots of development resources.
+Traditionally developing native iOS and Android applications has required the developer to use platform-specific programming language and development environment. For iOS development, this means using Objectice C or Swift and for Android development using JVM based languages such as Java, Scala or Kotlin. Releasing an application for both these platforms technically requires to develop two separate applications with different programming languages. This requires lots of development resources.
 
-One of the popular approaches to unify the platform-specific development has been to utilize the browser as the rendering engine. [Cordova](https://cordova.apache.org/) is one of the most popular platforms for building cross-platform applications. It allows developing multi-platform applications using standard web technologies - HTML5, CSS3, and JavaScript. However, Cordova applications are running within a embedded browser window in the user's device. That is why these applications can not achieve the performance of native applications that utilize actual native user interface components.
+One of the popular approaches to unify the platform-specific development has been to utilize the browser as the rendering engine. [Cordova](https://cordova.apache.org/) is one of the most popular platforms for building cross-platform applications. It allows developing multi-platform applications using standard web technologies - HTML5, CSS3, and JavaScript. However, Cordova applications are running within a embedded browser window in the user's device. That is why these applications can not achieve neither the performance of the look-and-feel of native applications that utilize actual native user interface components.
 
 [React Native](https://reactnative.dev/) is a framework for developing native Android and iOS applications using JavaScript and React. It provides a set of cross-platform components that behind the scenes utilize the platform's native components. Using React Native allows us to bring all the familiar features of React such as JSX, components, props, state, and hooks into native application development. On top of that we are able to utilize many familiar libraries in React ecosystem such as [react-redux](https://react-redux.js.org/), [react-apollo](https://github.com/apollographql/react-apollo), [react-router](https://reacttraining.com/react-router/core/guides/quick-start) and many more.
 
@@ -104,6 +104,11 @@ Next, let's add the ESLint configuration into a _.eslintrc_ file into the _rate-
 ```javascript
 {
   "plugins": ["react"],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
   "extends": ["eslint:recommended", "plugin:react/recommended"],
   "parser": "babel-eslint",
   "env": {
@@ -111,6 +116,7 @@ Next, let's add the ESLint configuration into a _.eslintrc_ file into the _rate-
   },
   "rules": {
     "react/prop-types": "off",
+    "semi": "error"
   }
 }
 ```
@@ -119,14 +125,20 @@ And finally, let's add a `lint` script to the _package.json_ file to check the l
 
 ```javascript
 {
-  // ...
-  "scripts": {
-    // ...
-    "lint": "eslint ./src/**/*.{js,jsx} App.js --no-error-on-unmatched-pattern"
+  "plugins": ["react"],
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true
   },
-  // ...
+  "rules": {
+    "react/prop-types": "off",
+    "semi": "error"
+  }
 }
 ```
+
+In contrast to parts 1-8, we are using semicolons to terminate lines now, so we have added the rule [semi](https://eslint.org/docs/rules/semi) to check that.
 
 Now we can check that the linting rules are obeyed in JavaScript files in the _src_ directory and in the _App.js_ file by running `npm run lint`. We will be adding our future code to the _src_ directory but because we haven't added any files there yet, we need the `no-error-on-unmatched-pattern` flag. Also if possible integrate ESLint with your editor. If you are using Visual Studio Code you can do that by, going to the extensions section and checking that the ESLint extension is installed and enabled:
 
@@ -142,7 +154,7 @@ Set up ESLint in your project so that you can perform linter checks by running `
 
 Expo development tools can be used to display the log messages of the running application. Error and warning level messages are also visible in the emulator and the mobile app interface. Error messages will pop out as a red overlay whereas warning messages can be expanded by pressing the yellow alert dialog at the bottom of the screen. For debugging purposes, we can use the familiar `console.log` method to write debugging messages to the log.
 
-Let's try this in practice. Start the Expo development tools by running `npm start` and open the application with either emulator or the mobile app. When the application is running you should be able to a device under the "Metro Bundler" in the top left corner of the developments tools:
+Let's try this in practice. Start the Expo development tools by running `npm start` and open the application with either emulator or the mobile app. When the application is running you should be able to see your connected devices under the "Metro Bundler" in the top left corner of the developments tools:
 
 ![Expo development tools](images/9.png)
 

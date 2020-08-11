@@ -103,6 +103,14 @@ const App = () => {
 export default App;
 ```
 
+## Manually reloading the application
+
+As we have seen, Expo will automatically reload the application when we make changes to the code. However, there might be times when automatic reload isn't working and the application has to be reloaded manually. This can be achieved through the in-app developer menu.
+
+You can access the developer menu by shaking your device or by selecting "Shake Gesture" inside the Hardware menu in the iOS Simulator. You can also use the `⌘D` keyboard shortcut when your app is running in the iOS Simulator, or `⌘M` when running in an Android emulator on Mac OS and `Ctrl+M` on Windows and Linux.
+
+Once the developer menu is open, simply press "Reload" to reload the application. After the application has been reloaded, automatic reloads should work without the need for a manual reload.
+
 ## Exercise 10.3.
 
 In this exercise, we will implement the first version of the reviewed repositories list. The list should contain the repository's full name, description, language, number of forks, number of stars, rating average and number of reviews. Luckily React Native provides a handy component for displaying a list of data, which is the [FlatList](https://reactnative.dev/docs/flatlist) component. Implement components `RepositoryList` and `RepositoryItem` in the _components_ directory's files _RepositoryList.jsx_ and _RepositoryItem.jsx_. The `RepositoryList` component should render the `FlatList` component and `RepositoryItem` a single item on the list (hint: use the `FlatList` component's [renderItem](https://reactnative.dev/docs/flatlist#renderitem) prop). Use this as the basis for the _RepositoryList.jsx_ file:
@@ -196,9 +204,9 @@ import { Text, View } from 'react-native';
 const BigBlueText = () => {
   return (
     <View style={{ padding: 20 }}>
-      <Text style={{ color: 'blue', fontSize: 24, fontWeight: 700 }}>
+      <Text style={{ color: 'blue', fontSize: 24, fontWeight: '700' }}>
         Big blue text
-      <Text>
+      </Text>
     </View>
   );
 };
@@ -219,7 +227,7 @@ const styles = StyleSheet.create({
   text: {
     color: 'blue',
     fontSize: 24,
-    fontWeight: 700,
+    fontWeight: '700',
   },
 });
 
@@ -253,7 +261,7 @@ const styles = StyleSheet.create({
   },
   bigText: {
     fontSize: 24,
-    fontWeight: 700,
+    fontWeight: '700',
   },
 });
 
@@ -386,7 +394,7 @@ Feel free to extend or modify this component if you feel like it. It might also 
 
 ## Using flexbox for layout
 
-The last concept we will cover related to styling is implementing layouts with [flexbox](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Flexbox). Those who are familiar with CSS know that flexbox is not only related to React Native instead it has many use cases in web development as well. In fact, those who know how flexbox works in web development won't probably learn that much from this section. Nevertheless, let's learn or revise the basics of flexbox.
+The last concept we will cover related to styling is implementing layouts with [flexbox](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Flexbox). Those who are more familiar with CSS know that flexbox is not only related to React Native instead it has many use cases in web development as well. In fact, those who know how flexbox works in web development won't probably learn that much from this section. Nevertheless, let's learn or revise the basics of flexbox.
 
 Flexbox is a layout entity consisting of two separate components: a _flex container_ and inside it a set of _flex items_. Flex container has a set of properties that control the flow of its items. To make a component a flex container it must have the style property `display` set as `flex` which is the default value for the `display` property. Here is an example of a flex container:
 
@@ -464,7 +472,7 @@ We will soon need to navigate between different views in our application. That i
 
 ```javascript
 import React from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import Constants from 'expo-constants';
 
 const styles = StyleSheet.create({
@@ -478,7 +486,7 @@ const styles = StyleSheet.create({
 const AppBar = () => {
   return (
     <View style={styles.container}>
-      <ScrollView horizontal>{/* ... */}</ScrollView>
+      {/* ... */}
     </View>
   );
 };
@@ -486,7 +494,7 @@ const AppBar = () => {
 export default AppBar;
 ```
 
-The [ScrollView](https://reactnative.dev/docs/scrollview) component enables horizontal scrolling when there is too much content to fit the screen. Now that the `AppBar` component will prevent the status bar from overlapping the content, you can remove the `marginTop` style we added for the `Main` component earlier in the _Main.jsx_ file. The `AppBar` component should currently contain a tab with text "Repositories". Make the tab touchable by using the [TouchableWithoutFeedback](https://reactnative.dev/docs/touchablewithoutfeedback) component but you don't have to handle the `onPress` event in any way. Add the `AppBar` component to the `Main` component so that it is the uppermost component in the screen. The `AppBar` component should look something like this:
+Now that the `AppBar` component will prevent the status bar from overlapping the content, you can remove the `marginTop` style we added for the `Main` component earlier in the _Main.jsx_ file. The `AppBar` component should currently contain a tab with text "Repositories". Make the tab touchable by using the [TouchableWithoutFeedback](https://reactnative.dev/docs/touchablewithoutfeedback) component but you don't have to handle the `onPress` event in any way. Add the `AppBar` component to the `Main` component so that it is the uppermost component in the screen. The `AppBar` component should look something like this:
 
 ![Application preview](images/6.jpg)
 
@@ -571,6 +579,8 @@ const Main = () => {
 export default Main;
 ```
 
+Note that, using the react-router-native library will break Expo's web browser preview. However, other previews will work just like before.
+
 ## Exercise 10.6.
 
 Create a file _SignIn.jsx_ in the _components_ directory with the following content:
@@ -588,6 +598,24 @@ export default SignIn;
 ```
 
 Set up a route for this `SignIn` component in the `Main` component. Also add a tab with text "Sign in" in to the app bar next to the "Repositories" tab. User should be able to navigate between the two views by pressing the tabs (hint: use the [Link](https://reacttraining.com/react-router/native/api/Link) component and its [component](https://reacttraining.com/react-router/native/api/Link/component-func) prop).
+
+As we are adding more tabs to our app bar, it its a good idea to allow horizontal scrolling once the tabs won't fit the screen. The [ScrollView](https://reactnative.dev/docs/scrollview) component is just the right component for the job.
+
+Wrap the tabs in the `AppBar` component's tabs with a `ScrollView` component:
+
+```javascript
+const AppBar = () => {
+  return (
+    <View style={styles.container}>
+      <ScrollView horizontal>
+        {/* ... */}
+      </ScrollView>
+    </View>
+  );
+};
+```
+
+Setting the [horizontal](https://reactnative.dev/docs/scrollview#horizontal) prop `true` will cause the `ScrollView` component to scroll horizontally once the content won't fit the screen. Note that, you will need to add suitable style properties to the `ScrollView` component so that the tabs will be laid in a _row_ inside the flex container. 
 
 ## Form state management
 
