@@ -1,6 +1,6 @@
 # Communicating with server
 
-So far we have implemented features to our application without any actual server communication. For example, the reviewed repositories list we have implemented uses mock data and the sign-in form doesn't send the user's credentials to any authorization endpoint. In this section, we will learn how to communicate with a server using HTTP requests, how to use Apollo Client in a React Native application, and how to store data in the user's device.
+So far we have implemented features to our application without any actual server communication. For example, the reviewed repositories list we have implemented uses mock data and the sign in form doesn't send the user's credentials to any authorization endpoint. In this section, we will learn how to communicate with a server using HTTP requests, how to use Apollo Client in a React Native application, and how to store data in the user's device.
 
 Soon we will learn how to communicate with a server in our application. Before we get to that, we need a server to communicate with. For this purpose, we have a completed server implementation in the [rate-repository-api](https://github.com/fullstack-hy2020/rate-repository-api) repository. The rate-repository-api server fulfills all our application's API needs during this part. It uses [SQLite](https://www.sqlite.org/index.html) database which doesn't need any setup and provides an Apollo GraphQL API along with a few REST API endpoints.
 
@@ -252,7 +252,7 @@ The same goes for organizing mutations. The only difference is that we define th
 
 ## Evolving the structure
 
-Once our application grows larger there might times when certain files grow too large to manage. For example, we have component `A` which renders the components `B` and `C`. All these components are defined in a file _A.jsx_ in a _components_ directory. We would like to extract components `B` and `C` into their own files _B.jsx_ and _C.jsx_ without major refactors. We have two options:
+Once our application grows larger there might be times when certain files grow too large to manage. For example, we have component `A` which renders the components `B` and `C`. All these components are defined in a file _A.jsx_ in a _components_ directory. We would like to extract components `B` and `C` into their own files _B.jsx_ and _C.jsx_ without major refactors. We have two options:
 
 1. Create files _B.jsx_ and _C.jsx_ in the _components_ directory. This results in the following structure:
 
@@ -296,44 +296,15 @@ The changes in the `useRepositories` hook should not affect the `RepositoryList`
 
 Every application will most likely run in more than one environment. Two obvious candidates for these environments are the development environment and the production environment. Out of these two, the development environment is the one we are running the application right now. Different environments usually have different dependencies, for example, the server we are developing locally might use a local database whereas the server that is deployed to the production environment uses the production database. To make the code environment independent we need to parametrize these dependencies. At the moment we are using one very environment dependant hardcoded value in our application: the URL of the server.
 
-We have previously learned that we can provide running programs with environment variables. These variables can be defined in the command line or using environment configuration files such as _.env_ files and third-party libraries such as Dotenv. Unfortunately, React Native doesn't have direct support for environment variables. However, we can use the [Babel](https://babeljs.io/) compiler to inject desired environment variables _at build time_. These variables can be defined in environment-specific _.env_ files.
+We have previously learned that we can provide running programs with environment variables. These variables can be defined in the command line or using environment configuration files such as _.env_ files and third-party libraries such as _Dotenv_. Unfortunately, React Native doesn't have direct support for environment variables. However, we can access the Expo configuration defined in the _app.json_ file at runtime from our JavaScript code. This configuration can be used define and access environment dependant variables.
 
-Babel preset [react-native-dotenv](https://github.com/zetachang/react-native-dotenv) lets you import environment variables from a _.env_ file in React Native without any native code integration. Start by installing the dependency:
-
-```shell
-npm install react-native-dotenv --save-dev
-```
-
-Once installed, we can use the preset in the Babel compiler by including it in the configuration in the _babel.config.js_ file which is located in the root directory of your project:
-
-```javascript
-module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: ['babel-preset-expo', 'module:react-native-dotenv'],
-  };
-};
-```
-
-The way the preset works is that the environment variables are defined in _.env_ files. The _.env_ file contains development environment-related variables and _.env.production_ production environment-related variables. Add a file _.env_ in the root directory of your project with the following content:
-
-```
-ENV=development
-```
-
-Similarly, create a file _.env.production_ with the following content:
-
-```
-ENV=production
-```
-
-These variables can be accessed in the code by importing them from the _react-native-dotenv_ module. Let's try this by logging the value of the `ENV` variable in the `App` component:
+The configuration can be accessed by importing the `Constants` constant from the _expo-constants_ module as be have done a few times before. Once imported, the `Constants.manifest` property will contain the configuration. Let's try this by logging `Constants.manifest` in the `App` component:
 
 ```javascript
 import React from 'react';
 import { NativeRouter } from 'react-router-native';
 import { ApolloProvider } from '@apollo/react-hooks';
-import { ENV } from 'react-native-dotenv';
+import Constants from 'expo-constants';
 
 import Main from './src/components/Main';
 import createApolloClient from './src/utils/apolloClient';
@@ -341,7 +312,7 @@ import createApolloClient from './src/utils/apolloClient';
 const apolloClient = createApolloClient();
 
 const App = () => {
-  console.log(ENV);
+  console.log(Constants.manifest);
 
   return (
     <NativeRouter>
@@ -355,11 +326,95 @@ const App = () => {
 export default App;
 ```
 
-You should see the value of the _ENV_ variable in the logs. You can remove the log message and the import, once you have succesfully logged the variable's value. Note that it is _never_ a good idea to put sensitive data into the React Native's environment variables. The reason for this is that once a user has downloaded your application, they can, at least in theory, reverse engineer your application and figure out the sensitive data you have stored into the code.
+You should now see the configuration in the logs.
+
+The next step is to use the configuration to define environment dependant variables in our application. Let's get started by renaming the _app.json_ file to _app.config.js_. Once the file is renamed, we can use JavaScript inside the configuration file. Change the file contents so that the previous object:
+
+```javascript
+{
+  "expo": {
+    "name": "rate-repository-app",
+    // rest of the configuration...
+  }
+}
+```
+
+Is turned into and export, which contains the contents of the `expo` property:
+
+```javascript
+export default {
+   name: 'rate-repository-app',
+   // rest of the configuration...
+};
+```
+
+Expo has reserved an [extra](https://docs.expo.io/guides/environment-variables/#using-app-manifest-extra) property in the configuration for any application-specific configuration. To see how this works, let's add a `env` variable into our application's configuration:
+
+```javascript
+export default {
+   name: 'rate-repository-app',
+   // rest of the configuration...
+   extra: {
+     env: 'development'
+   },
+};
+```
+
+Restart Expo development tools to apply the changes and you should see that the value of `Constants.manifest` property has changed and now includes the `extra` property containing our application-specific configuration. Now the value of the `env` variable is accessible through the `Constants.manifest.extra.env` property.
+
+Because using hard coded configuration is a bit silly, let's use an environment variable instead:
+
+```javascript
+export default {
+   name: 'rate-repository-app',
+   // rest of the configuration...
+   extra: {
+     env: process.env.ENV,
+   },
+};
+```
+
+As we have learned, we can set the value of an environment variable through the command line by defining the variable's name and value before the actual command. As an example, start Expo development tools and set the environment variable `ENV` as `test` like this:
+
+```
+ENV=test npm start
+```
+
+If you take a look at the logs, you should see that the `Constants.manifest.extra.env` property has changed.
+
+We can also load environment variables from a `.env` file as we have learned in the previous parts. First, we need to install the [Dotenv](https://www.npmjs.com/package/dotenv) library:
+
+```
+npm install dotenv
+```
+
+Next, add a _.env_ file in the root directory of our project with the following content:
+
+```
+ENV=development
+```
+
+Finally, import the library in the _app.config.js_ file:
+
+```javascript
+import 'dotenv/config';
+
+export default {
+   name: 'rate-repository-app',
+   // rest of the configuration...
+   extra: {
+     env: process.env.ENV,
+   },
+};
+```
+
+You need to restart Expo development tools to apply the changes you have made to the _.env_ file.
+
+Note that it is _never_ a good idea to put sensitive data into the application's configuration. The reason for this is that once a user has downloaded your application, they can, at least in theory, reverse engineer your application and figure out the sensitive data you have stored into the code.
 
 ## Exercise 10.10.
 
-Instead of the hardcoded Apollo Server's URL, use an environment variable when initializing the Apollo Client. You can name the variable for example `APOLLO_URI`. For now, it is enough that you only define the variable in the _development environment_, because we aren't aware of the production URL of the Apollo Server.
+Instead of the hardcoded Apollo Server's URL, use an environment variable defined in the _.env_ file when initializing the Apollo Client. You can name the variable for example `APOLLO_URI`.
 
 ## Storing data in the user's device
 
@@ -401,8 +456,8 @@ class ShoppingCartStorage {
 }
 
 const doShopping = async () => {
-  const shoppinCartA = new ShoppingCartStorage('shoppingCartA');
-  const shoppinCartB = new ShoppingCartStorage('shoppingCartB');
+  const shoppingCartA = new ShoppingCartStorage('shoppingCartA');
+  const shoppingCartB = new ShoppingCartStorage('shoppingCartB');
 
   await shoppingCartA.addProduct('chips');
   await shoppingCartA.addProduct('soda');
@@ -429,7 +484,7 @@ We can add an item to the storage using the [AsyncStorage.setItem](https://githu
 
 ### Exercise 10.11.
 
-The current implementation of the sign-in form doesn't do much with the submitted user's credentials. Let's do something about that in this exercise. First, read the rate-repository-api server's [authorization documentation](https://github.com/fullstack-hy2020/rate-repository-api#-authorization) and test the provided queries in the GraphQL Playground. If the database doesn't have any users, you can populate the database with some seed data. Instructions for this can be found in the [getting started](https://github.com/fullstack-hy2020/rate-repository-api#-getting-started) section of the README.
+The current implementation of the sign in form doesn't do much with the submitted user's credentials. Let's do something about that in this exercise. First, read the rate-repository-api server's [authorization documentation](https://github.com/fullstack-hy2020/rate-repository-api#-authorization) and test the provided queries in the GraphQL Playground. If the database doesn't have any users, you can populate the database with some seed data. Instructions for this can be found in the [getting started](https://github.com/fullstack-hy2020/rate-repository-api#-getting-started) section of the README.
 
 Once you know how the authorization queries are supposed to work, create a file _useSignIn.js_ file in the _hooks_ directory. In that file implement a `useSignIn` hook that sends the `authorize` mutation using the [useMutation](https://www.apollographql.com/docs/react/api/react-hooks/#usemutation) hook. Note that the `authorize` mutation has a _single_ argument called `credentials`, which is of type `AuthorizeInput`. This [input type](https://graphql.org/graphql-js/mutations-and-input-types) contains `username` and `password` fields.
 
@@ -468,7 +523,7 @@ const SignIn = () => {
 };
 ```
 
-This exercise is completed once you can log the user's _authorize_ mutations result after the sign-in form has been submitted. The mutation result should contain the user's access token.
+This exercise is completed once you can log the user's _authorize_ mutations result after the sign in form has been submitted. The mutation result should contain the user's access token.
 
 ### Exercise 10.12.
 
@@ -597,7 +652,7 @@ export default App;
 Accessing the storage instance in the `useSignIn` hook is now possible using the React's [useContext](https://reactjs.org/docs/hooks-reference.html#usecontext) hook like this:
 
 ```javascript
-import { useContext } from 'React';
+import { useContext } from 'react';
 // ...
 
 import AuthStorageContext from '../contexts/AuthStorageContext';
@@ -609,6 +664,8 @@ const useSignIn = () => {
 ```
 
 Note that accessing a context's value using the `useContext` hook only works if the `useContext` hook is used in a component that is a _descendant_ of the [Context.Provider](https://reactjs.org/docs/context.html#contextprovider) component.
+
+The ability to provide data to component's descendants opens tons of use cases for React Context. To learn more about these use cases, read Kent C. Dodds' enlightening article [How to use React Context effectively](https://kentcdodds.com/blog/how-to-use-react-context-effectively) to find out how to combine the [useReducer](https://reactjs.org/docs/hooks-reference.html#usereducer) hook with the context to implement state management. You might find a way to use this knowledge in the upcoming exercises.
 
 ## Exercises 10.13. - 10.14.
 
@@ -626,7 +683,7 @@ apolloClient.resetStore();
 
 ### Exercise 10.14.
 
-The final step in completing the sign-in feature is to implement a sign out feature. The `authorizedUser` query can be used to check the authorized user's information. If the query's result is `null`, that means that the user is not authorized. Open the GraphQL playground and run the following query:
+The final step in completing the sign in feature is to implement a sign out feature. The `authorizedUser` query can be used to check the authorized user's information. If the query's result is `null`, that means that the user is not authorized. Open the GraphQL playground and run the following query:
 
 ```javascript
 {
@@ -639,4 +696,6 @@ The final step in completing the sign-in feature is to implement a sign out feat
 
 You will probably end up with the `null` result. This is because the GraphQL Playground is not authorized, meaning that it doesn't send a valid access token with the request. Revise the [authorization documentation](https://github.com/fullstack-hy2020/rate-repository-api#-authorization) and retrieve an access token using the `authorize` mutation. Use this access token in the _Authorization_ header as instructed in the documentation. Now, run the `authorizedUser` query again and you should be able to see the authorized user's information.
 
-Open the `AppBar` component in the _AppBar.jsx_ file where you currently have the tabs "Repositories" and "Sign in". Change the tabs so that if the user is signed in the tab "Sign out" is displayed, otherwise show the "Sign in" tab. You can achieve this by using the `authorizedUser` query with the [useQuery](https://www.apollographql.com/docs/react/api/react-hooks/#usequery) hook. In addition, pressing the "Sign out" tab should remove the user's access token from the storage and reset the Apollo Client's store. Resetting the Apollo Client's store should also re-execute all active queries which means that the `authorizedUser` query should be re-executed. Note that the order of execution is crucial: access token must be removed from the storage _before_ the Apollo Client's store is reset.
+Open the `AppBar` component in the _AppBar.jsx_ file where you currently have the tabs "Repositories" and "Sign in". Change the tabs so that if the user is signed in the tab "Sign out" is displayed, otherwise show the "Sign in" tab. You can achieve this by using the `authorizedUser` query with the [useQuery](https://www.apollographql.com/docs/react/api/react-hooks/#usequery) hook.
+
+Pressing the "Sign out" tab should remove the user's access token from the storage and reset the Apollo Client's store with the [resetStore](https://www.apollographql.com/docs/react/v2.5/api/apollo-client/#ApolloClient.resetStore) method. Calling the `resetStore` method should automatically re-execute all active queries which means that the `authorizedUser` query should be re-executed. Note that the order of execution is crucial: access token must be removed from the storage _before_ the Apollo Client's store is reset.

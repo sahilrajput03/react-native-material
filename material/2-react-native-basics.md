@@ -416,7 +416,7 @@ const FlexboxExample = () => {
 Perhaps the most important properties of a flex container are the following:
 
 - [flexDirection](https://css-tricks.com/almanac/properties/f/flex-direction/) property controls the direction in which the flex items are laid out within the container. Possible values for this property are `row`, `row-reverse`, `column` (default value) and `column-reverse`. Flex direction `row` will lay out the flex items from left to right, whereas `column` from top to bottom. `*-reverse` directions will just reverse the order of the flex items.
-- [justifyContent](https://css-tricks.com/almanac/properties/j/justify-content/) property controls the aligment of flex items along the main axis (defined by the `flexDirection` property). Possible values for this property are `flex-start` (default value), `flex-end`, `center`, `space-between`, `space-around` and `space-evenly`.
+- [justifyContent](https://css-tricks.com/almanac/properties/j/justify-content/) property controls the alignment of flex items along the main axis (defined by the `flexDirection` property). Possible values for this property are `flex-start` (default value), `flex-end`, `center`, `space-between`, `space-around` and `space-evenly`.
 - [alignItems](https://css-tricks.com/almanac/properties/a/align-items/) property does the same as `justifyContent` but for the opposite axis. Possible values for this property are `flex-start`, `flex-end`, `center`, `baseline` and `stretch` (default value).
 
 Let's move on to flex items. As mentioned, a flex container can contain one or many flex items. Flex items have properties that control how they behave in respect of other flex items in the same flex container. To make a component a flex item all you have to do is to set it as an immediate child of a flex container:
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   },
   flexItemA: {
     flexGrow: 0,
-    backgrundColor: 'green',
+    backgroundColor: 'green',
   },
   flexItemB: {
     flexGrow: 1,
@@ -455,7 +455,7 @@ const FlexboxExample = () => {
 
 One of the most commonly used properties of flex item is the [flexGrow](https://css-tricks.com/almanac/properties/f/flex-grow/) property. It accepts a unitless value which defines the ability for a flex item to grow if necessary. If every flex items have a `flexGrow` of `1`, they will share all the available space evenly. If a flex item have a `flexGrow` of `0` it will only use the space its content requires and leave rest of the space for other flex items.
 
-Here is a more interactive and concreate example of how to use flexbox to implement a simple card component with header, body and footer: [Flexbox example](https://snack.expo.io/@kalleilv/3d045d).
+Here is a more interactive and concrete example of how to use flexbox to implement a simple card component with header, body and footer: [Flexbox example](https://snack.expo.io/@kalleilv/3d045d).
 
 <!-- TODO: embedded snack
 <div data-snack-id="@kalleilv/flexbox-example" data-snack-platform="web" data-snack-preview="true" data-snack-theme="light" style="overflow:hidden;background:#fafafa;border:1px solid rgba(0,0,0,.08);border-radius:4px;height:505px;width:100%"></div>
@@ -472,7 +472,7 @@ We will soon need to navigate between different views in our application. That i
 
 ```javascript
 import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Constants from 'expo-constants';
 
 const styles = StyleSheet.create({
@@ -484,11 +484,7 @@ const styles = StyleSheet.create({
 });
 
 const AppBar = () => {
-  return (
-    <View style={styles.container}>
-      {/* ... */}
-    </View>
-  );
+  return <View style={styles.container}>{/* ... */}</View>;
 };
 
 export default AppBar;
@@ -502,7 +498,7 @@ The background color of the app bar in the image is `#24292e` but you can use an
 
 ### Exercise 10.5.
 
-The current version of the reviewed repositories list looks quite grim. Modify the _RepositoryListItem_ component so that it also displays reporitory author's avatar image. You can implement this by using the [Image](https://reactnative.dev/docs/image) component. Counts, such as number of stars and forks, larger than or equal to 1000 should be displayed in thousands with precision of one decimal and with a "k" suffix. This means that for example fork count of 8439 should be displayed as "8.4k". Also polish the overall look of the component so that the reviewed repositories list looks something like this:
+The current version of the reviewed repositories list looks quite grim. Modify the _RepositoryListItem_ component so that it also displays repository author's avatar image. You can implement this by using the [Image](https://reactnative.dev/docs/image) component. Counts, such as number of stars and forks, larger than or equal to 1000 should be displayed in thousands with precision of one decimal and with a "k" suffix. This means that for example fork count of 8439 should be displayed as "8.4k". Also polish the overall look of the component so that the reviewed repositories list looks something like this:
 
 ![Application preview](images/7.jpg)
 
@@ -520,7 +516,36 @@ With React Native we can use the entire React router's core, including the hooks
 npm install react-router-native
 ```
 
-Next, open the _App.js_ file and add the `NativeRouter` component to the `App` component:
+Using the react-router-native library will break Expo's web browser preview. However, other previews will work just like before. We can fix the issue by extending the Expo's Webpack configuration so that it transpiles the react-router-native library's sources with Babel. To extend the Webpack configuration we need to install the _@expo/webpack-config_ library:
+
+```
+npm install @expo/webpack-config --save-dev
+```
+
+Next, create a _webpack.config.js_ file in the root directory of your project with the following content:
+
+```javascript
+const path = require('path');
+const createExpoWebpackConfigAsync = require('@expo/webpack-config');
+
+module.exports = async function(env, argv) {
+  const config = await createExpoWebpackConfigAsync(env, argv);
+
+  config.module.rules.push(
+    {
+      test: /\.js$/,
+      loader: 'babel-loader',
+      include: [path.join(__dirname, 'node_modules/react-router-native')],
+    }
+  )
+
+  return config;
+};
+```
+
+Finally, restart Expo's development tools so that our new Webpack configuration will be applied.
+
+Now that the Expo's web browser preview is fixed, open the _App.js_ file and add the `NativeRouter` component to the `App` component:
 
 <!-- TODO: highlight -->
 
@@ -541,7 +566,7 @@ const App = () => {
 export default App;
 ```
 
-Now that the router is in place, let's add our first route to the `Main` componenent in the _Main.jsx_ file:
+Once the router is in place, let's add our first route to the `Main` component in the _Main.jsx_ file:
 
 <!-- TODO: highlight -->
 
@@ -579,8 +604,6 @@ const Main = () => {
 export default Main;
 ```
 
-Note that, using the react-router-native library will break Expo's web browser preview. However, other previews will work just like before.
-
 ## Exercise 10.6.
 
 Create a file _SignIn.jsx_ in the _components_ directory with the following content:
@@ -599,7 +622,9 @@ export default SignIn;
 
 Set up a route for this `SignIn` component in the `Main` component. Also add a tab with text "Sign in" in to the app bar next to the "Repositories" tab. User should be able to navigate between the two views by pressing the tabs (hint: use the [Link](https://reacttraining.com/react-router/native/api/Link) component and its [component](https://reacttraining.com/react-router/native/api/Link/component-func) prop).
 
-As we are adding more tabs to our app bar, it its a good idea to allow horizontal scrolling once the tabs won't fit the screen. The [ScrollView](https://reactnative.dev/docs/scrollview) component is just the right component for the job.
+## Exercise 10.6.
+
+As we are adding more tabs to our app bar, it is a good idea to allow horizontal scrolling once the tabs won't fit the screen. The [ScrollView](https://reactnative.dev/docs/scrollview) component is just the right component for the job.
 
 Wrap the tabs in the `AppBar` component's tabs with a `ScrollView` component:
 
@@ -607,23 +632,21 @@ Wrap the tabs in the `AppBar` component's tabs with a `ScrollView` component:
 const AppBar = () => {
   return (
     <View style={styles.container}>
-      <ScrollView horizontal>
-        {/* ... */}
-      </ScrollView>
+      <ScrollView horizontal>{/* ... */}</ScrollView>
     </View>
   );
 };
 ```
 
-Setting the [horizontal](https://reactnative.dev/docs/scrollview#horizontal) prop `true` will cause the `ScrollView` component to scroll horizontally once the content won't fit the screen. Note that, you will need to add suitable style properties to the `ScrollView` component so that the tabs will be laid in a _row_ inside the flex container. 
+Setting the [horizontal](https://reactnative.dev/docs/scrollview#horizontal) prop `true` will cause the `ScrollView` component to scroll horizontally once the content won't fit the screen. Note that, you will need to add suitable style properties to the `ScrollView` component so that the tabs will be laid in a _row_ inside the flex container. You can make sure that the app bar can be scrolled horizontally by adding tabs until the last tab won't fit the screen. Just remember to remove the extra tabs once the app bar is working as intended.
 
 ## Form state management
 
-Now that we have a placeholder for the sign in view the next step would be to implement the sign form. Before we get to that let's talk about forms in a more wider perspective.
+Now that we have a placeholder for the sign in view the next step would be to implement the sign in form. Before we get to that let's talk about forms in a more wider perspective.
 
 Implementation of forms relies heavily on the state management. Using the React's `useState` hook for the state management might get the job done for smaller forms. However, it will quickly make the state management quite tedious with more complex forms. Luckily there are many good libraries in the React ecosystem that eases the state management of forms. One of these libraries is [Formik](https://jaredpalmer.com/formik/).
 
-The main concepts of Formik are the _context_ and a _field_. The Formik's context is provided by the [Formik](https://jaredpalmer.com/formik/docs/api/formik) component that it contains the form's state. The state consists of information of form's fields. This information includes for example the value and validation errors of each field. State's fields can be referenced by their name using the [useField](https://jaredpalmer.com/formik/docs/api/useField) hook or the [Field](https://jaredpalmer.com/formik/docs/api/field) component.
+The main concepts of Formik are the _context_ and a _field_. The Formik's context is provided by the [Formik](https://jaredpalmer.com/formik/docs/api/formik) component that contains the form's state. The state consists of information of form's fields. This information includes for example the value and validation errors of each field. State's fields can be referenced by their name using the [useField](https://jaredpalmer.com/formik/docs/api/useField) hook or the [Field](https://jaredpalmer.com/formik/docs/api/field) component.
 
 Let's see how this actually works by creating a form for calculating the [body mass index](https://en.wikipedia.org/wiki/Body_mass_index):
 
@@ -684,9 +707,9 @@ const BodyMassIndexCalculator = () => {
 
 This example is not part of our application, so you don't need to actually add this code to the application. You can however try it out for example in [Expo Snack](https://snack.expo.io/). Expo Snack is an online editor for React Native, similar to [JSFiddle](https://jsfiddle.net/) and [CodePen](https://codepen.io/). It is a useful platform for quickly trying out code. You can share Expo Snacks with others using a link or embedding them as a <i>Snack Player</i> in a web site. You might have bumped into Snack Players for example in this material and React Native documentation.
 
-In the example, we define the `Formik` context in the `BodyMassIndexCalculator` component and provided it with initial values and a submit callback. Initial values are provided through the [initialValues](https://jaredpalmer.com/formik/docs/api/formik#initialvalues-values) prop as an object with field names as keys and the corresponding initial values as values. The submit callback is provided through the [onSubmit](https://jaredpalmer.com/formik/docs/api/formik#onsubmit-values-values-formikbag-formikbag--void--promiseany) prop and it is called when the `handleSubmit` function is called with the condition that there isn't any validation errros. Children of the `Formik` component is a function which is called with [props](https://jaredpalmer.com/formik/docs/api/formik#formik-render-methods-and-props) including state related information and actions such as the `handleSubmit` function.
+In the example, we define the `Formik` context in the `BodyMassIndexCalculator` component and provided it with initial values and a submit callback. Initial values are provided through the [initialValues](https://jaredpalmer.com/formik/docs/api/formik#initialvalues-values) prop as an object with field names as keys and the corresponding initial values as values. The submit callback is provided through the [onSubmit](https://jaredpalmer.com/formik/docs/api/formik#onsubmit-values-values-formikbag-formikbag--void--promiseany) prop and it is called when the `handleSubmit` function is called with the condition that there isn't any validation errors. Children of the `Formik` component is a function which is called with [props](https://jaredpalmer.com/formik/docs/api/formik#formik-render-methods-and-props) including state related information and actions such as the `handleSubmit` function.
 
-The `BodyMassIndexForm` component contains the state bindings between the context and text inputs. We use the [useField](https://jaredpalmer.com/formik/docs/api/useField) hook to get the value of a field and to change it. _useField_ hooks has one argument which is the name of the field and it returns an array with three values, `[field, meta, helpers]`. The [field object](https://jaredpalmer.com/formik/docs/api/useField#fieldinputpropsvalue) contains the value of the field, the [meta object](https://jaredpalmer.com/formik/docs/api/useField#fieldmetapropsvalue) contains field meta information such as a posibble error message and the [helpers object](https://jaredpalmer.com/formik/docs/api/useField#fieldhelperprops) contains different actions for changing the state of field such as the `setValue` function. Note that the component that uses the `useField` hook has to be _within the Formik's context_. This means that the component has to be a descendant of the `Formik` component.
+The `BodyMassIndexForm` component contains the state bindings between the context and text inputs. We use the [useField](https://jaredpalmer.com/formik/docs/api/useField) hook to get the value of a field and to change it. _useField_ hooks has one argument which is the name of the field and it returns an array with three values, `[field, meta, helpers]`. The [field object](https://jaredpalmer.com/formik/docs/api/useField#fieldinputpropsvalue) contains the value of the field, the [meta object](https://jaredpalmer.com/formik/docs/api/useField#fieldmetapropsvalue) contains field meta information such as a possible error message and the [helpers object](https://jaredpalmer.com/formik/docs/api/useField#fieldhelperprops) contains different actions for changing the state of field such as the `setValue` function. Note that the component that uses the `useField` hook has to be _within the Formik's context_. This means that the component has to be a descendant of the `Formik` component.
 
 Here is an interactive version of our previous example: [Formik example](https://snack.expo.io/@kalleilv/9e9e0d).
 
@@ -772,6 +795,22 @@ const BodyMassIndexForm = ({ onSubmit }) => {
 };
 ```
 
+## Exercise 10.7.
+
+Implement a sign in form to the `SignIn` component we added earlier in the _SignIn.jsx_ file. The sign in form should include two text fields, one for the username and one for the password. There should also be a button for submitting the form. You don't need to implement a `onSubmit` callback function, it is enough that the form values are logged using `console.log` when the form is submitted:
+
+```javascript
+const onSubmit = (values) => {
+  console.log(values);
+};
+```
+
+Remember to utilize the `FormikTextInput` component we implemented earlier. You can use the [secureTextEntry](https://reactnative.dev/docs/textinput#securetextentry) prop in the `TextInput` component to obscure the password input.
+
+The sign in form should look something like this:
+
+![Application preview](images/19.jpg)
+
 ## Form validation
 
 Formik offers two approaches to the form validation: a validation function or a validation schema. Validation function is a function provided for the `Formik` component as the value of the [validate](https://jaredpalmer.com/formik/docs/guides/validation#validate) prop. It receives the from's values as an argument and returns an object containing possible field specific error messages.
@@ -782,7 +821,7 @@ The second approach is the validation schema which is provided for the `Formik` 
 npm install yup
 ```
 
-Next, as an example, let's create validation schema for the body mass index form we implemented earlier. We wan't to validate that both _mass_ and _height_ fields are present and they are numeric. Also the value of _mass_ should be greater or equal to 1 and the value of _height_ should be greater or equal to 0.5. Here is how we define the schema:
+Next, as an example, let's create validation schema for the body mass index form we implemented earlier. We want to validate that both _mass_ and _height_ fields are present and they are numeric. Also the value of _mass_ should be greater or equal to 1 and the value of _height_ should be greater or equal to 0.5. Here is how we define the schema:
 
 <!-- TODO: highlight  -->
 
@@ -820,7 +859,7 @@ const BodyMassIndexCalculator = () => {
 
 The validation is performed by default every time a field's value changes and when the `handleSubmit` function is called. If the validation fails, the function provided for the `onSubmit` prop of the `Formik` component is not called.
 
-The `FormikTextInput` component we previously implemented displayes field's error message if it is present and the field is "touched", meaning that the field has received and lost focus:
+The `FormikTextInput` component we previously implemented displays field's error message if it is present and the field is "touched", meaning that the field has received and lost focus:
 
 ```javascript
 const FormikTextInput = ({ name, ...props }) => {
@@ -847,19 +886,17 @@ const FormikTextInput = ({ name, ...props }) => {
 
 ## Exercise 10.7.
 
-Implement a sign in form to the `SignIn` component we added earlier in the _SignIn.jsx_ file. The sign in form should include two text fields, one for the username and one for the password. There should also be a button for submitting the form. Validate the sign in form so that both username and password fields are required. You don't need to implement a `onSubmit` callback function, it is enough that the form values are logged using `console.log` when the form is submitted. You can use this simple function as the `onSubmit` callback function:
+Validate the sign in form so that both username and password fields are required. Note that the `onSubmit` callback implemented in the previous exercise, _should not be called_ if the form validation fails.
 
-```javascript
-const onSubmit = (values) => {
-  console.log(values);
-};
-```
+The current implementation of the `FormikTextInput` component should display an error message if a touched field has an error. Emphasize this error message by giving it a red color.
 
-Note that the callback _should not be called_ if the form validation fails. The sign in form should look something like this:
+On top of the red error message, give an invalid field a visual indication of an error by giving it a red border color. Remember that if a field has an error, the `FormikTextInput` component sets the `TextInput` component's `error` prop as `true`. You can use the value of the `error` prop to attach conditional styles to the `TextInput` component.
+
+Here's what the sign in form should roughly look like with an invalid field:
 
 ![Application preview](images/8.jpg)
 
-Remember to utilize the `FormikTextInput` component we implemented earlier. You will need to add a red border to the `TextInput` component when the `error` prop is `true`. Also use same the red color in the `FormikTextInput` component's error message. The red color used in the image is `#d73a4a`. You can use the [secureTextEntry](https://reactnative.dev/docs/textinput#securetextentry) prop in the `TextInput` component to obscure the password input.
+The red color used in this implementation is `#d73a4a`.
 
 ## Platform specific code
 
